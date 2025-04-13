@@ -140,22 +140,12 @@ fun BankAdminScreen() {
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Icône décorative de banque
-                    Icon(
-                        imageVector = Icons.Filled.AccountBalance,
-                        contentDescription = "Bank Icon",
-                        tint = accentColor.copy(alpha = 0.7f),
-                        modifier = Modifier.size(32.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
                     // Champ de saisie pour l'adresse du backend avec icône
                     OutlinedTextField(
                         value = backendAddress,
                         onValueChange = { backendAddress = it },
                         label = { Text("Adresse du backend") },
-                        placeholder = { Text("Exemple: https://api.mybank.com") },
+                        placeholder = { Text("https://api.mybank.com") },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
