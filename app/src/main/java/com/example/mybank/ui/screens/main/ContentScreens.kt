@@ -2,7 +2,9 @@ package com.example.mybank.ui.screens.main
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,11 +24,11 @@ data class MenuItem(val title: String, val icon: ImageVector)
 @Composable
 fun getSidebarMenuItems(): List<MenuItem> {
     return listOf(
-        MenuItem("Tableau de bord", Icons.Default.Dashboard),
-        MenuItem("Comptes", Icons.Default.AccountBalance),
-        MenuItem("Transactions", Icons.Default.Payment),
-        MenuItem("Virements", Icons.Default.Send),
-        MenuItem("Paramètres", Icons.Default.Settings)
+        MenuItem("Liste Compte", Icons.AutoMirrored.Filled.List),
+        MenuItem("Modifier", Icons.Default.Edit),
+        MenuItem("Ajouter", Icons.Default.Add),
+        MenuItem("Statistique", Icons.Default.BarChart)
+
     )
 }
 

@@ -3,8 +3,11 @@ package com.example.mybank.ui.screens.main
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,26 +23,83 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
+    // États
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-
-    // État pour suivre l'élément de menu sélectionné
     var selectedMenuItem by remember { mutableStateOf(0) }
 
+    // Données
+    val menuItems = getSidebarMenuItems()
+    val contentScreens = getContentScreens()
+
+    // Structure principale avec DrawerLayout
     DismissibleNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             SidebarContent(
                 selectedMenuItem = selectedMenuItem,
-                onMenuItemSelected = { selectedMenuItem = it }
+                onMenuItemSelected = {
+                    selectedMenuItem = it
+                    // Fermer le drawer après sélection sur petit écran
+                    scope.launch {
+                        drawerState.close()
+                    }
+                }
             )
         }
     ) {
-        MainContent(
-            drawerState = drawerState,
-            selectedMenuItem = selectedMenuItem
+        // Scaffold pour le contenu principal
+        Scaffold(
+            topBar = {
+                MainTopBar(
+                    title = menuItems[selectedMenuItem].title,
+                    onMenuClick = {
+                        scope.launch {
+                            if (drawerState.isClosed) {
+                                drawerState.open()
+                            } else {
+                                drawerState.close()
+                            }
+                        }
+                    }
+                )
+            },
+            content = { paddingValues ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .background(BankColors.backgroundColor)
+                ) {
+                    contentScreens[selectedMenuItem]()
+                }
+            }
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MainTopBar(
+    title: String,
+    onMenuClick: () -> Unit
+) {
+    TopAppBar(
+        title = { Text(title) },
+        navigationIcon = {
+            IconButton(onClick = onMenuClick) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Menu"
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = BankColors.primaryColor,
+            titleContentColor = Color.White,
+            navigationIconContentColor = Color.White
+        )
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,7 +116,10 @@ private fun SidebarContent(
         // En-tête de la sidebar
         SidebarHeader()
 
-        Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
+        HorizontalDivider(
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
         // Éléments du menu
@@ -141,7 +204,7 @@ private fun SidebarFooter() {
     NavigationDrawerItem(
         icon = {
             Icon(
-                imageVector = Icons.Default.Logout,
+                imageVector = Icons.AutoMirrored.Filled.Logout,
                 contentDescription = "Déconnexion",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -154,65 +217,6 @@ private fun SidebarFooter() {
             unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun MainContent(
-    drawerState: DrawerState,
-    selectedMenuItem: Int
-) {
-    val menuItems = getSidebarMenuItems()
-    val contentScreens = getContentScreens()
-
-    Scaffold(
-        topBar = {
-            MainTopAppBar(
-                title = menuItems[selectedMenuItem].title,
-                drawerState = drawerState
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(BankColors.backgroundColor)
-        ) {
-            contentScreens[selectedMenuItem]()
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MainTopAppBar(title: String, drawerState: DrawerState) {
-    val scope = rememberCoroutineScope()
-
-    TopAppBar(
-        title = { Text(title) },
-        navigationIcon = {
-            IconButton(onClick = {
-                scope.launch {
-                    if (drawerState.isClosed) {
-                        drawerState.open()
-                    } else {
-                        drawerState.close()
-                    }
-                }
-            }) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Menu"
-                )
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = BankColors.primaryColor,
-            titleContentColor = Color.White,
-            navigationIconContentColor = Color.White
-        )
     )
 }
 
