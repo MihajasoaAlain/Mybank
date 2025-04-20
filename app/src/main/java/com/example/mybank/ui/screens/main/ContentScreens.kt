@@ -1,5 +1,8 @@
 package com.example.mybank.ui.screens.main
 
+import ClientBancaire
+import ClientListScreen
+import ClientRepository
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -9,12 +12,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.mybank.ui.client.StatistiquesScreen
 import com.example.mybank.ui.theme.BankColors
 
 // Modèle pour les éléments du menu
@@ -35,11 +43,19 @@ fun getSidebarMenuItems(): List<MenuItem> {
 // Fonction pour obtenir les écrans de contenu
 @Composable
 fun getContentScreens(): List<@Composable () -> Unit> {
+    val repository = remember { ClientRepository() }
+    var selectedScreen by remember { mutableStateOf(0) }
+
+    // État pour le client en cours d'édition
+    var clientToEdit by remember { mutableStateOf<Pair<Int, ClientBancaire>?>(null) }
+
     return listOf(
-        { DashboardScreen() },
+        { ClientListScreen(repository = repository, onEditClient = { index ->
+            clientToEdit = index to repository.clients[index]
+        }) },
         { AccountsScreen() },
         { TransactionsScreen() },
-        { TransfersScreen() },
+        { StatistiquesScreen(repository = repository) },
         { SettingsScreen() }
     )
 }
