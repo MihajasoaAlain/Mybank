@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.mybank.api.RetrofitInstance
 import com.example.mybank.ui.theme.BankColors
 import com.example.mybank.ui.theme.MyBankTheme
 import kotlinx.coroutines.launch
@@ -162,6 +163,16 @@ private fun SidebarHeader() {
         }
     }
 }
+private suspend fun testBackendConnection() {
+    try {
+        val clients = RetrofitInstance.api.getClients()
+        println("Connexion réussie, clients récupérés : $clients")
+    } catch (e: Exception) {
+        println("Échec de la connexion : ${e.message}")
+    }
+}
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
