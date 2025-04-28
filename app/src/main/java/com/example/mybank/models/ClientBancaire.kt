@@ -14,6 +14,7 @@ data class ClientBancaire(
     }
 }
 
+
 // Repository simulé pour gérer les données (en attendant l'implémentation MySQL/PostgreSQL)
 class ClientRepository {
     private val _clients = mutableListOf(
