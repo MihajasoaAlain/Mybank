@@ -1,7 +1,7 @@
-package com.example.mybank.service
+package com.example.mybank.api.service
 
 import ClientBancaire
-import com.example.mybank.data.dto.StatsResponse
+import com.example.mybank.api.data.dto.StatsResponse
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET

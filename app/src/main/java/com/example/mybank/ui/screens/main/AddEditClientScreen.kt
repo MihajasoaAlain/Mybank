@@ -1,4 +1,4 @@
-package com.example.mybank.ui.client
+package com.example.mybank.ui.screens.main
 
 import ClientBancaire
 import androidx.compose.foundation.background

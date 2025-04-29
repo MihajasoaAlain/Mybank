@@ -1,9 +1,6 @@
 package com.example.mybank.ui.screens.main
 
-import ClientBancaire
 import ClientListScreen
-import ClientRepository
-import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
@@ -13,9 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.example.mybank.repository.RemoteClientRepository
-import com.example.mybank.ui.client.AddEditClientScreen
-import com.example.mybank.ui.client.StatistiquesScreen
+import com.example.mybank.api.repository.RemoteClientRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

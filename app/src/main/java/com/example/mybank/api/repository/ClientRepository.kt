@@ -1,4 +1,4 @@
-package com.example.mybank.repository
+package com.example.mybank.api.repository
 class ClientRepository {
 
 }

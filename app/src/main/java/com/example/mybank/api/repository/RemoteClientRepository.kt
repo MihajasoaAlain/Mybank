@@ -1,9 +1,9 @@
-package com.example.mybank.repository
+package com.example.mybank.api.repository
 
 import ClientBancaire
 import com.example.mybank.api.RetrofitInstance
-import com.example.mybank.data.dto.StatsResponse
-import com.example.mybank.service.ClientApiService
+import com.example.mybank.api.data.dto.StatsResponse
+import com.example.mybank.api.service.ClientApiService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
