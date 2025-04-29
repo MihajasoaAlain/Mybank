@@ -1,0 +1,20 @@
+# .readthedocs.yaml
+
+version: 2
+
+# Build documentation in the specified Python environment
+python:
+  version: 3.8
+  install:
+    - requirements: requirements.txt
+
+# Sphinx configuration
+sphinx:
+  configuration: docs/conf.py
+
+# Build settings
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.8"
+  jobs: 2
