@@ -39,7 +39,7 @@ fun getContentScreens(): List<@Composable () -> Unit> {
         { AddEditClientScreen(
             onSave = { client ->
                 CoroutineScope(Dispatchers.IO).launch {
-                    repository.ajouterClient(client)
+                    repository.deleteClient(client)
                 }
                 selectedScreen = 0
             },
