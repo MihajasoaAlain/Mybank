@@ -68,7 +68,7 @@ fun ClientTableRow(
     ) {
         // Design responsive avec poids adaptés
         Text(
-            text = client.numCompte.toString(),
+            text = client.numCompte,
             fontSize = 14.sp,
             modifier = Modifier.weight(0.8f)
         )

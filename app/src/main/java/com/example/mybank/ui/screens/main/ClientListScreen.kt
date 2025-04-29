@@ -31,6 +31,11 @@ fun ClientListScreen(repository: RemoteClientRepository) {
     var stats by remember { mutableStateOf<StatsResponse?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
+
+    // État pour les alertes de succès
+    var showSuccessMessage by remember { mutableStateOf(false) }
+    var successMessage by remember { mutableStateOf("") }
+
     // Couleurs style iOS
     val iosPrimaryColor = Color(0xFF007AFF)
     val iosSurfaceColor = Color(0xFFF2F5F9)
@@ -45,6 +50,9 @@ fun ClientListScreen(repository: RemoteClientRepository) {
     var clientToDelete by remember { mutableStateOf<Pair<Int, ClientBancaire>?>(null) }
     var clientToEdit by remember { mutableStateOf<Pair<Int, ClientBancaire>?>(null) }
 
+    // État pour le SnackbarHostState
+    val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(key1 = true) {
         try {
             clients = repository.getClients()
@@ -57,189 +65,218 @@ fun ClientListScreen(repository: RemoteClientRepository) {
         }
     }
 
-    // Afficher l'interface selon l'état (chargement, erreur, données)
-    when {
-        isLoading -> {
-            // Afficher un indicateur de chargement
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+    // Afficher une Snackbar lorsque le message de succès est défini
+    LaunchedEffect(showSuccessMessage) {
+        if (showSuccessMessage) {
+            snackbarHostState.showSnackbar(
+                message = successMessage,
+                duration = SnackbarDuration.Short
+            )
+            showSuccessMessage = false
         }
+    }
 
-        error != null -> {
-            // Afficher le message d'erreur
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = error!!, color = Color.Red)
+    // Scaffold pour contenir le Snackbar
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = iosSurfaceColor
+    ) { paddingValues ->
+        // Afficher l'interface selon l'état (chargement, erreur, données)
+        when {
+            isLoading -> {
+                // Afficher un indicateur de chargement
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
-        }
 
-        else -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(iosSurfaceColor)
-                    .padding(16.dp)
-            ) {
-                // En-tête élégant
-                Text(
-                    text = "Liste des Clients",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
+            error != null -> {
+                // Afficher le message d'erreur
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = error!!, color = Color.Red)
+                }
+            }
 
-                // Tableau de clients stylisé
-                Card(
+            else -> {
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(12.dp)
+                        .fillMaxSize()
+                        .background(iosSurfaceColor)
+                        .padding(paddingValues)
+                        .padding(16.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize()
+                    // En-tête élégant
+                    Text(
+                        text = "Liste des Clients",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
+
+                    // Tableau de clients stylisé
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        // En-tête du tableau avec design responsive
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(headerColor, headerColor.copy(alpha = 0.9f))
-                                    )
-                                )
-                                .padding(vertical = 12.dp, horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier.fillMaxSize()
                         ) {
-                            // Design responsive avec poids adaptés aux différentes largeurs d'écran
-                            Text(
-                                text = "N°",
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp,
-                                color = iosPrimaryColor,
-                                modifier = Modifier.weight(0.8f),
-                                textAlign = TextAlign.Start
-                            )
-                            Text(
-                                text = "Nom",
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp,
-                                color = iosPrimaryColor,
-                                modifier = Modifier.weight(1.2f),
-                                textAlign = TextAlign.Start
-                            )
-                            Text(
-                                text = "Solde",
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp,
-                                color = iosPrimaryColor,
-                                modifier = Modifier.weight(0.8f),
-                                textAlign = TextAlign.Start
-                            )
-                            Text(
-                                text = "Catégorie",
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp,
-                                color = iosPrimaryColor,
-                                modifier = Modifier.weight(0.8f),
-                                textAlign = TextAlign.Start
-                            )
-                            // Espace pour le menu d'actions
-                            Spacer(modifier = Modifier.width(40.dp))
-                        }
-
-                        // Divider élégant
-                        Divider(
-                            color = iosPrimaryColor.copy(alpha = 0.1f),
-                            thickness = 1.dp
-                        )
-
-                        // Contenu du tableau avec LazyColumn pour une meilleure performance
-                        LazyColumn {
-                            itemsIndexed(clients) { index, client ->
-                                ClientTableRow(
-                                    client = client,
-                                    onEdit = {
-                                        clientToEdit = Pair(index, client)
-                                        showEditDialog = true
-                                    },
-                                    onDelete = {
-                                        clientToDelete = Pair(index, client)
-                                        showDeleteDialog = true
-                                    },
-                                    iosGreen = iosGreen,
-                                    iosYellow = iosYellow,
-                                    iosRed = iosRed,
-                                    iosPrimaryColor = iosPrimaryColor,
-                                    isOddRow = index % 2 != 0
+                            // En-tête du tableau avec design responsive
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(headerColor, headerColor.copy(alpha = 0.9f))
+                                        )
+                                    )
+                                    .padding(vertical = 12.dp, horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Design responsive avec poids adaptés aux différentes largeurs d'écran
+                                Text(
+                                    text = "N°",
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 12.sp,
+                                    color = iosPrimaryColor,
+                                    textAlign = TextAlign.Start
                                 )
-                                Divider(color = Color.LightGray.copy(alpha = 0.5f))
+                                Text(
+                                    text = "Nom",
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 12.sp,
+                                    color = iosPrimaryColor,
+                                    textAlign = TextAlign.Start
+                                )
+                                Text(
+                                    text = "Solde",
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 12.sp,
+                                    color = iosPrimaryColor,
+                                    textAlign = TextAlign.Start
+                                )
+                                Text(
+                                    text = "Catégorie",
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 12.sp,
+                                    color = iosPrimaryColor,
+                                    textAlign = TextAlign.Start
+                                )
+                                // Espace pour le menu d'actions
+                                Spacer(modifier = Modifier.width(20.dp))
+                            }
+
+
+                            // Contenu du tableau avec LazyColumn pour une meilleure performance
+                            LazyColumn {
+                                itemsIndexed(clients) { index, client ->
+                                    ClientTableRow(
+                                        client = client,
+                                        onEdit = {
+                                            clientToEdit = Pair(index, client)
+                                            showEditDialog = true
+                                        },
+                                        onDelete = {
+                                            clientToDelete = Pair(index, client)
+                                            showDeleteDialog = true
+                                        },
+                                        iosGreen = iosGreen,
+                                        iosYellow = iosYellow,
+                                        iosRed = iosRed,
+                                        iosPrimaryColor = iosPrimaryColor,
+                                        isOddRow = index % 2 != 0
+                                    )
+                                    Divider(color = Color.LightGray.copy(alpha = 0.5f))
+                                }
                             }
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                // Statistiques style iOS
-                StatistiquesIOS(iosPrimaryColor, stats)
+                    // Statistiques style iOS
+                    StatistiquesIOS(iosPrimaryColor, stats)
 
-                // Modale de confirmation de suppression
-                if (showDeleteDialog && clientToDelete != null) {
-                    DeleteConfirmationDialog(
-                        client = clientToDelete!!.second,
-                        onConfirm = {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                try {
-                                    // Utiliser le numCompte du client à supprimer au lieu de l'index
-                                    val clientId = clientToDelete!!.second.numCompte.toInt()  // ou .id selon votre modèle
-                                    repository.supprimerClient(clientId)
+                    // Modale de confirmation de suppression
+                    if (showDeleteDialog && clientToDelete != null) {
+                        DeleteConfirmationDialog(
+                            client = clientToDelete!!.second,
+                            onConfirm = {
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    try {
+                                        // Utiliser le numCompte du client à supprimer au lieu de l'index
+                                        val clientId = clientToDelete!!.second.numCompte  // ou .id selon votre modèle
+                                        repository.deleteClient(clientId)
 
-                                    // Rafraîchir la liste après suppression
-                                    clients = repository.getClients()
-                                    stats = repository.getStats()
-                                } catch (e: Exception) {
-                                    // Gérer les erreurs
-                                    println("Erreur lors de la suppression: ${e.message}")
-                                    // Optionnel: mettre à jour l'UI pour montrer l'erreur
-                                    withContext(Dispatchers.Main) {
-                                        error = "Erreur lors de la suppression: ${e.message}"
+                                        // Rafraîchir la liste après suppression
+                                        clients = repository.getClients()
+                                        stats = repository.getStats()
+
+                                        // Afficher l'alerte de succès
+                                        withContext(Dispatchers.Main) {
+                                            successMessage = "Client supprimé avec succès"
+                                            showSuccessMessage = true
+                                        }
+
+                                    } catch (e: Exception) {
+                                        // Gérer les erreurs
+                                        println("Erreur lors de la suppression: ${e.message}")
+                                        // Optionnel: mettre à jour l'UI pour montrer l'erreur
+                                        withContext(Dispatchers.Main) {
+                                            error = "Erreur lors de la suppression: ${e.message}"
+                                        }
                                     }
                                 }
-                            }
 
-                            showDeleteDialog = false
-                            clientToDelete = null
-                        },
-                        onDismiss = {
-                            showDeleteDialog = false
-                            clientToDelete = null
-                        },
-                        iosRed = iosRed
-                    )
-                }
+                                showDeleteDialog = false
+                                clientToDelete = null
+                            },
+                            onDismiss = {
+                                showDeleteDialog = false
+                                clientToDelete = null
+                            },
+                            iosRed = iosRed
+                        )
+                    }
 
-                // Modale d'édition de client
-                if (showEditDialog && clientToEdit != null) {
-                    EditClientDialog(
-                        client = clientToEdit!!.second,
-                        onConfirm = { updatedClient ->
-                            CoroutineScope(Dispatchers.IO).launch {
-                                repository.modifierClient(clientToEdit!!.second.numCompte.toInt(), updatedClient)
-                                // Rafraîchir la liste après modification
-                                clients = repository.getClients()
-                                stats = repository.getStats()
-                            }
-                            showEditDialog = false
-                            clientToEdit = null
-                        },
-                        onDismiss = {
-                            showEditDialog = false
-                            clientToEdit = null
-                        },
-                        iosPrimaryColor = iosPrimaryColor
-                    )
+                    // Modale d'édition de client
+                    if (showEditDialog && clientToEdit != null) {
+                        EditClientDialog(
+                            client = clientToEdit!!.second,
+                            onConfirm = { updatedClient ->
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    try {
+                                        repository.updateClient(clientToEdit!!.second.numCompte, updatedClient)
+                                        // Rafraîchir la liste après modification
+                                        clients = repository.getClients()
+                                        stats = repository.getStats()
+
+                                        // Afficher l'alerte de succès
+                                        withContext(Dispatchers.Main) {
+                                            successMessage = "Client mis à jour avec succès"
+                                            showSuccessMessage = true
+                                        }
+                                    } catch (e: Exception) {
+                                        // Gérer les erreurs
+                                        withContext(Dispatchers.Main) {
+                                            error = "Erreur lors de la mise à jour: ${e.message}"
+                                        }
+                                    }
+                                }
+                                showEditDialog = false
+                                clientToEdit = null
+                            },
+                            onDismiss = {
+                                showEditDialog = false
+                                clientToEdit = null
+                            },
+                            iosPrimaryColor = iosPrimaryColor
+                        )
+                    }
                 }
             }
         }

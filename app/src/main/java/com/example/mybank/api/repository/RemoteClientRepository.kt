@@ -29,9 +29,9 @@ class RemoteClientRepository(private val api: ClientApiService = RetrofitInstanc
         }
     }
 
-    suspend fun ajouterClient(client: ClientBancaire): Boolean {
+    suspend fun deleteClient(client: ClientBancaire): Boolean {
         return try {
-            api.ajouterClient(client)
+            api.addClient(client)
             true
         } catch (e: Exception) {
             _erreurConnexion.value = "Impossible d'ajouter le client: ${e.localizedMessage}"
@@ -40,9 +40,9 @@ class RemoteClientRepository(private val api: ClientApiService = RetrofitInstanc
         }
     }
 
-    suspend fun modifierClient(id: Int, client: ClientBancaire): Boolean {
+    suspend fun updateClient(id: String, client: ClientBancaire): Boolean {
         return try {
-            api.modifierClient(id, client)
+            api.updateClient(id, client)
             true
         } catch (e: Exception) {
             _erreurConnexion.value = "Impossible de modifier le client: ${e.localizedMessage}"
@@ -51,9 +51,9 @@ class RemoteClientRepository(private val api: ClientApiService = RetrofitInstanc
         }
     }
 
-    suspend fun supprimerClient(id: Int): Boolean {
+    suspend fun deleteClient(id: String): Boolean {
         return try {
-            api.supprimerClient(id)
+            api.deleteClient(id)
             true
         } catch (e: Exception) {
             _erreurConnexion.value = "Impossible de supprimer le client: ${e.localizedMessage}"
