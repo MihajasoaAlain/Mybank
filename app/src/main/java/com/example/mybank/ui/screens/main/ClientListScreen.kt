@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.PopupProperties
-import com.example.mybank.data.dto.StatsResponse
-import com.example.mybank.repository.RemoteClientRepository
+import com.example.mybank.api.data.dto.StatsResponse
+import com.example.mybank.api.repository.RemoteClientRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -118,7 +118,7 @@ fun ClientListScreen(repository: RemoteClientRepository) {
                         ) {
                             // Design responsive avec poids adaptés aux différentes largeurs d'écran
                             Text(
-                                text = "Numéro",
+                                text = "N°",
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 14.sp,
                                 color = iosPrimaryColor,

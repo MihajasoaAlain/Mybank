@@ -1,7 +1,6 @@
 package com.example.mybank.ui.client
 
 import ClientBancaire
-import ClientRepository
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,8 +21,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.mybank.data.dto.StatsResponse
-import com.example.mybank.repository.RemoteClientRepository
+import com.example.mybank.api.data.dto.StatsResponse
+import com.example.mybank.api.repository.RemoteClientRepository
 
 @Composable
 fun StatistiquesScreen(repository: RemoteClientRepository) {

@@ -2,7 +2,7 @@ package com.example.mybank.api
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import com.example.mybank.service.ClientApiService
+import com.example.mybank.api.service.ClientApiService
 
 object RetrofitInstance {
     // Ajouter le slash à la fin de l'URL
