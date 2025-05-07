@@ -17,7 +17,7 @@ interface ClientApiService {
     @POST("client")
     suspend fun addClient(@Body client: ClientBancaire)
 
-    @PATCH("client/{id}")
+    @PUT("client/{id}")
     suspend fun updateClient(@Path("id") id: String, @Body client: ClientBancaire)
 
     @DELETE("client/{id}")

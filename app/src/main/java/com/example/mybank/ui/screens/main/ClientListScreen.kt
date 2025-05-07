@@ -19,14 +19,10 @@ import com.example.mybank.ui.client.ClientTableRow
 import com.example.mybank.ui.client.StatistiquesIOS
 import com.example.mybank.ui.client.dialog.DeleteConfirmationDialog
 import com.example.mybank.ui.client.dialog.EditClientDialog
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Composable
 fun ClientListScreen(repository: RemoteClientRepository) {
-    // Suppression de la déclaration en double du repository
     var clients by remember { mutableStateOf<List<ClientBancaire>>(emptyList()) }
     var stats by remember { mutableStateOf<StatsResponse?>(null) }
     var isLoading by remember { mutableStateOf(true) }
@@ -47,22 +43,41 @@ fun ClientListScreen(repository: RemoteClientRepository) {
     // État pour les modales
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
-    var clientToDelete by remember { mutableStateOf<Pair<Int, ClientBancaire>?>(null) }
-    var clientToEdit by remember { mutableStateOf<Pair<Int, ClientBancaire>?>(null) }
+    var clientToDelete by remember { mutableStateOf<ClientBancaire?>(null) }
+    var clientToEdit by remember { mutableStateOf<ClientBancaire?>(null) }
 
     // État pour le SnackbarHostState
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(key1 = true) {
-        try {
-            clients = repository.getClients()
-            print(clients)
-            isLoading = false
-            stats = repository.getStats()
-        } catch (e: Exception) {
-            error = "Erreur lors du chargement des clients: ${e.message}"
-            isLoading = false
+    // Fonction pour rafraîchir les données
+    val refreshData = {
+        scope.launch {
+            isLoading = true
+            error = null
+            try {
+                val fetchedClients = repository.getClients()
+                println("DEBUG: refreshData - fetched ${fetchedClients.size} clients")
+                clients = fetchedClients
+
+                val fetchedStats = repository.getStats()
+                println("DEBUG: refreshData - stats fetched: ${fetchedStats != null}")
+                stats = fetchedStats
+
+                isLoading = false
+            } catch (e: Exception) {
+                println("ERROR in refreshData: ${e.message}")
+                e.printStackTrace()
+                error = "Erreur lors du chargement des données: ${e.message}"
+                isLoading = false
+            }
         }
+    }
+
+    // Charger les données initiales
+    LaunchedEffect(key1 = true) {
+        println("DEBUG: Initial data load started")
+        refreshData()
     }
 
     // Afficher une Snackbar lorsque le message de succès est défini
@@ -86,14 +101,35 @@ fun ClientListScreen(repository: RemoteClientRepository) {
             isLoading -> {
                 // Afficher un indicateur de chargement
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Chargement en cours...")
+                    }
                 }
             }
 
             error != null -> {
-                // Afficher le message d'erreur
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = error!!, color = Color.Red)
+                // Afficher le message d'erreur avec option de réessayer
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = error ?: "Une erreur s'est produite",
+                            color = iosRed,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { refreshData() },
+                            colors = ButtonDefaults.buttonColors(containerColor = iosPrimaryColor)
+                        ) {
+                            Text("Réessayer")
+                        }
+                    }
                 }
             }
 
@@ -122,10 +158,8 @@ fun ClientListScreen(repository: RemoteClientRepository) {
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            // En-tête du tableau avec design responsive
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            // En-tête du tableau
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -137,51 +171,55 @@ fun ClientListScreen(repository: RemoteClientRepository) {
                                     .padding(vertical = 12.dp, horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Design responsive avec poids adaptés aux différentes largeurs d'écran
                                 Text(
                                     text = "N°",
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 12.sp,
                                     color = iosPrimaryColor,
-                                    textAlign = TextAlign.Start
+                                    textAlign = TextAlign.Start,
+                                    modifier = Modifier.weight(0.15f)
                                 )
                                 Text(
                                     text = "Nom",
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 12.sp,
                                     color = iosPrimaryColor,
-                                    textAlign = TextAlign.Start
+                                    textAlign = TextAlign.Start,
+                                    modifier = Modifier.weight(0.35f)
                                 )
                                 Text(
                                     text = "Solde",
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 12.sp,
                                     color = iosPrimaryColor,
-                                    textAlign = TextAlign.Start
+                                    textAlign = TextAlign.Start,
+                                    modifier = Modifier.weight(0.25f)
                                 )
                                 Text(
                                     text = "Catégorie",
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 12.sp,
                                     color = iosPrimaryColor,
-                                    textAlign = TextAlign.Start
+                                    textAlign = TextAlign.Start,
+                                    modifier = Modifier.weight(0.25f)
                                 )
                                 // Espace pour le menu d'actions
                                 Spacer(modifier = Modifier.width(20.dp))
                             }
 
-
-                            // Contenu du tableau avec LazyColumn pour une meilleure performance
+                            // Contenu du tableau
                             LazyColumn {
                                 itemsIndexed(clients) { index, client ->
                                     ClientTableRow(
                                         client = client,
                                         onEdit = {
-                                            clientToEdit = Pair(index, client)
+                                            println("DEBUG: Edit clicked for client: ${client.numCompte}")
+                                            clientToEdit = client
                                             showEditDialog = true
                                         },
                                         onDelete = {
-                                            clientToDelete = Pair(index, client)
+                                            println("DEBUG: Delete clicked for client: ${client.numCompte}")
+                                            clientToDelete = client
                                             showDeleteDialog = true
                                         },
                                         iosGreen = iosGreen,
@@ -202,80 +240,101 @@ fun ClientListScreen(repository: RemoteClientRepository) {
                     StatistiquesIOS(iosPrimaryColor, stats)
 
                     // Modale de confirmation de suppression
-                    if (showDeleteDialog && clientToDelete != null) {
-                        DeleteConfirmationDialog(
-                            client = clientToDelete!!.second,
-                            onConfirm = {
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    try {
-                                        // Utiliser le numCompte du client à supprimer au lieu de l'index
-                                        val clientId = clientToDelete!!.second.numCompte  // ou .id selon votre modèle
-                                        repository.deleteClient(clientId)
+                    if (showDeleteDialog) {
+                        // Capture du client à supprimer dans une variable locale non-nullable
+                        val clientToDeleteNonNull = clientToDelete
+                        if (clientToDeleteNonNull != null) {
+                            // Stocker l'ID en dehors de la fonction de callback
+                            val clientId = clientToDeleteNonNull.numCompte.toString()
 
-                                        // Rafraîchir la liste après suppression
-                                        clients = repository.getClients()
-                                        stats = repository.getStats()
+                            DeleteConfirmationDialog(
+                                client = clientToDeleteNonNull,
+                                onConfirm = {
+                                    scope.launch {
+                                        try {
+                                            // Utiliser directement l'ID capturé plus haut
+                                            if (clientId.isNotEmpty()) {
+                                                println("DEBUG: Deleting client with ID: $clientId")
+                                                val success = repository.deleteClient(clientId)
 
-                                        // Afficher l'alerte de succès
-                                        withContext(Dispatchers.Main) {
-                                            successMessage = "Client supprimé avec succès"
-                                            showSuccessMessage = true
-                                        }
-
-                                    } catch (e: Exception) {
-                                        // Gérer les erreurs
-                                        println("Erreur lors de la suppression: ${e.message}")
-                                        // Optionnel: mettre à jour l'UI pour montrer l'erreur
-                                        withContext(Dispatchers.Main) {
+                                                if (success) {
+                                                    // Rafraîchir la liste après suppression
+                                                    refreshData()
+                                                    successMessage = "Client supprimé avec succès"
+                                                    showSuccessMessage = true
+                                                } else {
+                                                    error = "Échec de la suppression du client"
+                                                }
+                                            } else {
+                                                error = "ID client invalide"
+                                                println("ERROR: Empty client ID for delete")
+                                            }
+                                        } catch (e: Exception) {
+                                            println("ERROR during delete: ${e.message}")
+                                            e.printStackTrace()
                                             error = "Erreur lors de la suppression: ${e.message}"
                                         }
                                     }
-                                }
-
-                                showDeleteDialog = false
-                                clientToDelete = null
-                            },
-                            onDismiss = {
-                                showDeleteDialog = false
-                                clientToDelete = null
-                            },
-                            iosRed = iosRed
-                        )
+                                    showDeleteDialog = false
+                                    clientToDelete = null
+                                },
+                                onDismiss = {
+                                    showDeleteDialog = false
+                                    clientToDelete = null
+                                },
+                                iosRed = iosRed
+                            )
+                        }
                     }
 
                     // Modale d'édition de client
-                    if (showEditDialog && clientToEdit != null) {
-                        EditClientDialog(
-                            client = clientToEdit!!.second,
-                            onConfirm = { updatedClient ->
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    try {
-                                        repository.updateClient(clientToEdit!!.second.numCompte, updatedClient)
-                                        // Rafraîchir la liste après modification
-                                        clients = repository.getClients()
-                                        stats = repository.getStats()
+                    if (showEditDialog) {
+                        // Capture du client à éditer dans une variable locale non-nullable
+                        val clientToEditNonNull = clientToEdit
+                        if (clientToEditNonNull != null) {
+                            // Stocker l'ID en dehors de la fonction de callback
+                            val clientId = clientToEditNonNull.numCompte.toString()
 
-                                        // Afficher l'alerte de succès
-                                        withContext(Dispatchers.Main) {
-                                            successMessage = "Client mis à jour avec succès"
-                                            showSuccessMessage = true
-                                        }
-                                    } catch (e: Exception) {
-                                        // Gérer les erreurs
-                                        withContext(Dispatchers.Main) {
+                            EditClientDialog(
+                                client = clientToEditNonNull,
+                                onConfirm = { updatedClient ->
+                                    scope.launch {
+                                        try {
+                                            // Utiliser directement l'ID capturé plus haut
+                                            if (clientId.isNotEmpty()) {
+                                                println("DEBUG: Updating client with ID: $clientId")
+                                                println("DEBUG: Updated data: $updatedClient")
+
+                                                val success = repository.updateClient(clientId, updatedClient)
+
+                                                if (success) {
+                                                    // Rafraîchir la liste après modification
+                                                    refreshData()
+                                                    successMessage = "Client mis à jour avec succès"
+                                                    showSuccessMessage = true
+                                                } else {
+                                                    error = "Échec de la mise à jour du client"
+                                                }
+                                            } else {
+                                                error = "ID client invalide"
+                                                println("ERROR: Empty client ID for update")
+                                            }
+                                        } catch (e: Exception) {
+                                            println("ERROR during update: ${e.message}")
+                                            e.printStackTrace()
                                             error = "Erreur lors de la mise à jour: ${e.message}"
                                         }
                                     }
-                                }
-                                showEditDialog = false
-                                clientToEdit = null
-                            },
-                            onDismiss = {
-                                showEditDialog = false
-                                clientToEdit = null
-                            },
-                            iosPrimaryColor = iosPrimaryColor
-                        )
+                                    showEditDialog = false
+                                    clientToEdit = null
+                                },
+                                onDismiss = {
+                                    showEditDialog = false
+                                    clientToEdit = null
+                                },
+                                iosPrimaryColor = iosPrimaryColor
+                            )
+                        }
                     }
                 }
             }
