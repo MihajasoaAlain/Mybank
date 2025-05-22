@@ -1,6 +1,7 @@
 package com.example.mybank.ui.client
 
 import ClientBancaire
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun ClientTableRow(
     client: ClientBancaire,
@@ -49,6 +51,7 @@ fun ClientTableRow(
         "moyen" -> iosYellow
         else -> iosGreen
     }
+    val unite ="Ar"
 
     val rowBackground = if (isOddRow) {
         Color.White
@@ -63,7 +66,7 @@ fun ClientTableRow(
         modifier = Modifier
             .fillMaxWidth()
             .background(rowBackground)
-            .padding(vertical = 12.dp, horizontal = 16.dp),
+            .padding(vertical = 12.dp, horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Design responsive avec poids adaptés
@@ -79,7 +82,7 @@ fun ClientTableRow(
             modifier = Modifier.weight(1.2f)
         )
         Text(
-            text = String.format("%.2f €", client.solde),
+            text = String.format("%.2f %s", client.solde,unite),
             fontSize = 14.sp,
             color = if (client.solde < 0) iosRed else Color.Black,
             modifier = Modifier.weight(0.8f)

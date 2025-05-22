@@ -2,6 +2,7 @@ package com.example.mybank.ui.screens.admin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -50,7 +51,8 @@ fun AdminScreen(onNavigateToMain: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             AdminContentCard(
                 backendAddress = backendAddress,
@@ -95,6 +97,7 @@ private fun AdminContentCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Icône et titre
@@ -119,43 +122,10 @@ private fun AdminContentCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Configuration du système",
+                text = "",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Champ de saisie pour l'adresse du backend avec icône
-            OutlinedTextField(
-                value = backendAddress,
-                onValueChange = onBackendAddressChange,
-                label = { Text("Adresse du backend") },
-                placeholder = { Text("https://api.mybank.com") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    cursorColor = BankColors.accentColor,
-                    focusedIndicatorColor = BankColors.accentColor,
-                    unfocusedIndicatorColor = BankColors.primaryColor.copy(alpha = 0.5f),
-                    focusedLabelColor = BankColors.accentColor,
-                    unfocusedLabelColor = BankColors.primaryColor.copy(alpha = 0.7f)
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                singleLine = true,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Link,
-                        contentDescription = "URL Icon",
-                        tint = BankColors.accentColor
-                    )
-                }
             )
 
             Spacer(modifier = Modifier.height(40.dp))
@@ -180,13 +150,9 @@ private fun AdminContentCard(
                     contentDescription = "Start",
                     modifier = Modifier.size(20.dp)
                 )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = "COMMENCER",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Commencer", fontSize = 16.sp)
+
             }
         }
     }

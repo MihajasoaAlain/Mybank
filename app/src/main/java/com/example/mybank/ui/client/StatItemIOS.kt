@@ -21,7 +21,7 @@ fun StatItemIOS(label: String, value: Double, iosPrimaryColor: Color) {
         modifier = Modifier.padding(horizontal = 4.dp)
     ) {
         Text(
-            text = String.format("%.2f €", value),
+            text = String.format("%.2f AR", value),
             color = iosPrimaryColor,
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
