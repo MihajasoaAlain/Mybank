@@ -150,7 +150,7 @@ fun AddEditClientScreen(
                         ),
                         trailingIcon = {
                             Text(
-                                text = "€",
+                                text = "AR",
                                 color = Color.Gray,
                                 modifier = Modifier.padding(end = 12.dp)
                             )

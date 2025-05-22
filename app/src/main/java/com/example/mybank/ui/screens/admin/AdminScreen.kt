@@ -1,23 +1,25 @@
 package com.example.mybank.ui.screens.admin
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdminPanelSettings
-import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,18 +30,38 @@ import com.example.mybank.ui.theme.MyBankTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminScreen(onNavigateToMain: () -> Unit) {
-    // State
-    var backendAddress by remember { mutableStateOf("") }
-
-    // Gradient pour le fond
-    val gradientBrush = Brush.linearGradient(
-        colors = listOf(
-            BankColors.backgroundColor,
-            BankColors.lightBlue.copy(alpha = 0.3f),
-            BankColors.backgroundColor
+    // Animation d'entrée
+    val animatedScale by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
         ),
-        start = Offset(0f, 0f),
-        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+        label = "scale"
+    )
+
+    // Animation de rotation pour l'icône
+    val infiniteTransition = rememberInfiniteTransition(label = "rotation")
+    val rotationAngle by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(20000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "rotation"
+    )
+
+    // Gradient sophistiqué pour le fond
+    val gradientBrush = Brush.radialGradient(
+        colors = listOf(
+            BankColors.primaryColor.copy(alpha = 0.1f),
+            BankColors.lightBlue.copy(alpha = 0.05f),
+            BankColors.backgroundColor,
+            BankColors.accentColor.copy(alpha = 0.08f)
+        ),
+        radius = 1200f,
+        center = Offset(500f, 300f)
     )
 
     Box(
@@ -47,112 +69,235 @@ fun AdminScreen(onNavigateToMain: () -> Unit) {
             .fillMaxSize()
             .background(gradientBrush)
     ) {
+        // Éléments décoratifs animés
+        FloatingDecorations()
+
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
+                .fillMaxSize()
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             AdminContentCard(
-                backendAddress = backendAddress,
-                onBackendAddressChange = { backendAddress = it },
-                onStartClick = onNavigateToMain
+                onStartClick = onNavigateToMain,
+                animatedScale = animatedScale,
+                rotationAngle = rotationAngle
             )
         }
-
-        // Élément décoratif en bas de l'écran
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .height(100.dp)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            BankColors.backgroundColor.copy(alpha = 0f),
-                            BankColors.primaryColor.copy(alpha = 0.1f)
-                        )
-                    )
-                )
-        )
     }
+}
+
+@Composable
+private fun FloatingDecorations() {
+    // Cercles décoratifs flottants
+    Box(
+        modifier = Modifier
+            .offset(x = 50.dp, y = 100.dp)
+            .size(80.dp)
+            .background(
+                BankColors.primaryColor.copy(alpha = 0.1f),
+                CircleShape
+            )
+    )
+
+    Box(
+        modifier = Modifier
+            .offset(x = 300.dp, y = 150.dp)
+            .size(60.dp)
+            .background(
+                BankColors.accentColor.copy(alpha = 0.08f),
+                CircleShape
+            )
+    )
+
+    Box(
+        modifier = Modifier
+            .offset(x = 80.dp, y = 600.dp)
+            .size(120.dp)
+            .background(
+                BankColors.lightBlue.copy(alpha = 0.06f),
+                CircleShape
+            )
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AdminContentCard(
-    backendAddress: String,
-    onBackendAddressChange: (String) -> Unit,
-    onStartClick: () -> Unit
+    onStartClick: () -> Unit,
+    animatedScale: Float,
+    rotationAngle: Float
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 40.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            .scale(animatedScale),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+        ),
+        shape = RoundedCornerShape(24.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
+                .padding(32.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Icône et titre
-            Icon(
-                imageVector = Icons.Filled.AdminPanelSettings,
-                contentDescription = "Admin Icon",
-                tint = BankColors.primaryColor,
-                modifier = Modifier.size(48.dp)
-            )
+            // Badge sécurisé
+            Surface(
+                modifier = Modifier
+                    .padding(bottom = 24.dp),
+                shape = RoundedCornerShape(16.dp),
+                color = BankColors.primaryColor.copy(alpha = 0.1f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Security,
+                        contentDescription = "Secure",
+                        tint = BankColors.primaryColor,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "ACCÈS SÉCURISÉ",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = BankColors.primaryColor,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            // Icône principale avec animation
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                BankColors.primaryColor.copy(alpha = 0.2f),
+                                BankColors.primaryColor.copy(alpha = 0.05f)
+                            )
+                        ),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.AdminPanelSettings,
+                    contentDescription = "Admin Icon",
+                    tint = BankColors.primaryColor,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .rotate(rotationAngle * 0.1f) // Rotation très lente
+                )
+            }
 
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Titre principal
             Text(
-                text = "BANK ADMIN",
+                text = "ADMINISTRATION",
                 fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Black,
                 color = BankColors.primaryColor,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                letterSpacing = 1.2.sp
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "",
-                fontSize = 14.sp,
+                text = "PANEL BANCAIRE",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                letterSpacing = 0.8.sp
             )
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Bouton pour commencer avec icône
-            Button(
+            // Divider décoratif
+            Box(
+                modifier = Modifier
+                    .width(80.dp)
+                    .height(3.dp)
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                BankColors.accentColor,
+                                Color.Transparent
+                            )
+                        ),
+                        RoundedCornerShape(2.dp)
+                    )
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // Bouton principal stylisé
+            ElevatedButton(
                 onClick = onStartClick,
                 modifier = Modifier
-                    .size(width = 220.dp, height = 56.dp)
-                    .clip(RoundedCornerShape(28.dp)),
-                colors = ButtonDefaults.buttonColors(
+                    .size(width = 260.dp, height = 64.dp),
+                colors = ButtonDefaults.elevatedButtonColors(
                     containerColor = BankColors.accentColor,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    contentColor = Color.White
                 ),
-                elevation = ButtonDefaults.buttonElevation(
-                    defaultElevation = 6.dp,
-                    pressedElevation = 8.dp
-                )
+                elevation = ButtonDefaults.elevatedButtonElevation(
+                    defaultElevation = 8.dp,
+                    pressedElevation = 12.dp,
+                    hoveredElevation = 10.dp
+                ),
+                shape = RoundedCornerShape(32.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Send,
                     contentDescription = "Start",
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(24.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Commencer", fontSize = 16.sp)
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "ACCÉDER AU SYSTÈME",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.5.sp
+                )
+            }
 
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Informations supplémentaires
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Interface d'administration sécurisée",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Gestion complète du système bancaire",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }
